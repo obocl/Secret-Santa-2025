@@ -3,13 +3,11 @@
 const staff = [
   { name: "Adesina", color: "crimson" },
   { name: "Ayomide", color: "royalblue" },
-  { name: "Vida", color: "seagreen" },
+  { name: "Temitayo", color: "seagreen" },
   { name: "Olayinka", color: "goldenrod" },
   { name: "Comfort", color: "pink" },
   { name: "Damilola", color: "Grey" },
-  
   { name: "Glory", color: "Green" },
-  
   { name: "Chidinma", color: "Blue" },
   { name: "Adebayo", color: "Black" },
   { name: "Collins", color: "Brown" },
@@ -108,8 +106,8 @@ window.onload = () => {
   // --- NEW: check if user already picked ---
   const savedRecipient = localStorage.getItem(STORAGE_KEYS.CLICKED_RECIPIENT);
   if (savedRecipient) {
-    const container = document.getElementById("circles");
-    container.innerHTML = `<p>You already picked: <strong>${savedRecipient}</strong></p>`;
+    const msg = document.getElementById("pickedMsg");
+    msg.innerHTML = `<p>You already picked: <strong>${savedRecipient}</strong></p>`;
     alreadyClicked = true;
   }
 };
