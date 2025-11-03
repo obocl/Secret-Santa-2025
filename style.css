@@ -149,11 +149,9 @@ padding: 0 80px;
 /* Exclude Section */
 .exclude-section {
   text-align: center;
-  margin: 100px auto auto auto;
-  padding: 20px;
+  margin: 100px auto 100px auto;
+  padding: px;
 }
-
-  
 
 
 .exclude-section input {
@@ -180,7 +178,7 @@ padding: 0 80px;
 }
 
 .exclude-section p {
-  margin-top: 10px;
+  margin-top:20px;
   font-style: italic;
   color: #444;
 }
@@ -191,11 +189,12 @@ padding: 0 80px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
 }
 
 .circle {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -216,6 +215,5 @@ padding: 0 80px;
 .locked {
   opacity: 0.5;
   cursor: not-allowed;
+  
 }
-
-
