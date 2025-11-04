@@ -1,4 +1,3 @@
-
 // Staff list
 const staff = [
   { name: "Adesina", color: "crimson" },
@@ -6,44 +5,27 @@ const staff = [
   { name: "Temitayo", color: "seagreen" },
   { name: "Olayinka", color: "goldenrod" },
   { name: "Comfort", color: "pink" },
-  { name: "Damilola", color: "Grey" },
-  { name: "Glory", color: "Green" },
-  { name: "Chidinma", color: "Blue" },
-  { name: "Adebayo", color: "Black" },
-  { name: "Collins", color: "Brown" },
-  { name: "Olusegun", color: "Gold" },
+  { name: "Damilola", color: "grey" },
+  { name: "Glory", color: "green" },
+  { name: "Chidinma", color: "blue" },
+  { name: "Adebayo", color: "black" },
+  { name: "Collins", color: "brown" },
+  { name: "Olusegun", color: "gold" },
   { name: "Ariel", color: "skyblue" },
-  
 ];
-let excludedName = " ";
+
 let assignments = [];
+let excludedName = "";
 let alreadyClicked = false;
 
-
-
-// --- NEW: persistence keys ---
 const STORAGE_KEYS = {
-  ASSIGNMENTS: 'secretSanta_assignments',
-  CLICKED_RECIPIENT: 'secretSanta_clicked_recipient'
+  ASSIGNMENTS: "secretSanta_assignments",
+  PICKED_NAMES: "secretSanta_picked_names"
 };
 
-
-// Generate random assignments (Secret Santa rules)
-// Exclude a staff member by name
-function excludeMyName() {
-  const name = document.getElementById("excludeName").value.trim();
-  if (name && staff.some(s => s.name === name)) {
-    excludedName = name;
-    document.getElementById("excludeMsg").innerText = `${name} will not be assigned a recipient.`;
-    assignRecipients(); // re-run assignments without excluded person
-    renderCircles();
-  } else {
-    document.getElementById("excludeMsg").innerText = "Name not found in staff list.";
-  }
-}
-
+// Generate random unique assignments
 function assignRecipients() {
-  let givers = staff.filter(s => s.name !== excludedName);
+  let givers = [...staff];
   let receivers = [...staff];
   let valid = false;
 
@@ -56,64 +38,77 @@ function assignRecipients() {
     ...giver,
     recipient: receivers[i].name
   }));
-// --- NEW: save assignments to localStorage ---
   localStorage.setItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(assignments));
 }
 
-// Build the circles
+// Exclude picker
+function excludeMyName() {
+  const name = document.getElementById("excludeName").value.trim();
+  if (!name || !staff.some(s => s.name === name)) {
+    document.getElementById("excludeMsg").innerText = "Name not found in staff list.";
+    return;
+  }
+
+  excludedName = name;
+  alreadyClicked = false;
+  document.getElementById("excludeMsg").innerText = `${name} excluded.`;
+  renderCircles();
+}
+
+// Render all circles
 function renderCircles() {
   const container = document.getElementById("circles");
   container.innerHTML = "";
 
-  assignments.forEach((person) => {
+  const pickedNames = JSON.parse(localStorage.getItem(STORAGE_KEYS.PICKED_NAMES)) || [];
+  const savedAssignments = JSON.parse(localStorage.getItem(STORAGE_KEYS.ASSIGNMENTS)) || [];
+
+  assignments = savedAssignments.length ? savedAssignments : (assignRecipients(), assignments);
+
+  assignments.forEach(person => {
+    if (pickedNames.includes(person.recipient)) return; // recipient already picked
+    if (person.name === excludedName) return; // picker excluded
+
     const circle = document.createElement("div");
     circle.className = "circle";
     circle.style.background = person.color;
     circle.innerText = "?";
 
     circle.onclick = () => {
-      if (!alreadyClicked) {
-        circle.innerText = person.recipient;
-        alreadyClicked = true;
-// --- NEW: save picked recipient ---
-        localStorage.setItem(STORAGE_KEYS.CLICKED_RECIPIENT, person.recipient);
+      if (alreadyClicked) return;
 
-        // lock all other circles
-        document.querySelectorAll(".circle").forEach(c => {
-          if (c !== circle) {
-            c.classList.add("locked");
-          }
-        });
-      }
+      circle.innerText = person.recipient;
+      alreadyClicked = true;
+
+      pickedNames.push(person.recipient);
+      localStorage.setItem(STORAGE_KEYS.PICKED_NAMES, JSON.stringify(pickedNames));
+
+      document.getElementById("pickedMsg").innerHTML = `${excludedName} picked <strong>${person.recipient}</strong> 🎁`;
+
+      setTimeout(() => {
+        excludedName = "";
+        alreadyClicked = false;
+        document.getElementById("excludeName").value = "";
+        document.getElementById("excludeMsg").innerText = "Next person, enter your name!";
+        renderCircles();
+      }, 1500);
     };
 
     container.appendChild(circle);
   });
 }
 
-// Initialize
-window.onload = () => {
-  // --- NEW: try to load saved assignments ---
-  const savedAssignments = localStorage.getItem(STORAGE_KEYS.ASSIGNMENTS);
-  if (savedAssignments) {
-    assignments = JSON.parse(savedAssignments);
-  } else {
-    assignRecipients();
-  }
-
-  renderCircles();
-
-  // --- NEW: check if user already picked ---
-  const savedRecipient = localStorage.getItem(STORAGE_KEYS.CLICKED_RECIPIENT);
-  if (savedRecipient) {
-    const msg = document.getElementById("pickedMsg");
-    msg.innerHTML = `<p>You already picked: <strong>${savedRecipient}</strong></p>`;
-    alreadyClicked = true;
-  }
-};
-
-// --- NEW: Reset Game button logic ---
+// Reset game
 document.getElementById("resetBtn").onclick = () => {
   localStorage.clear();
-  location.reload(); // refresh to start fresh
+  excludedName = "";
+  alreadyClicked = false;
+  document.getElementById("excludeMsg").innerText = "";
+  document.getElementById("pickedMsg").innerText = "";
+  assignRecipients();
+  renderCircles();
 };
+
+// Initialize
+assignRecipients();
+renderCircles();
